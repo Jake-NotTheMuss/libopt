@@ -18,4 +18,4 @@ clean:
 test:
 	cd examples && $(MAKE)
 
-.PHONY: clean test
+.PHONY: all clean test

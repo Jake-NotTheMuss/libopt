@@ -12,3 +12,5 @@ fnv1a: fnv1a.c ../libopt.a
 
 echo: echo.c ../liboptf.a
 	$(CC) $(I) $(CFLAGS) -o $@ echo.c ../liboptf.a
+
+.PHONY: test
