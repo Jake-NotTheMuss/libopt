@@ -1,0 +1,6 @@
+README for libopt
+
+A library for parsing command line options. See opt.h for how to use
+this software.
+
+(end of README)
