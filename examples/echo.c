@@ -12,11 +12,14 @@
 static int no_lf;
 static const char *prefix = "";
 
+static int handler (void) { return 0; }
+
 const struct opt_s progopts [] = {
   OPT_HELP,
   { "-n", NULL, "Do not echo a line-feed", OPT_SET_FLAG, &no_lf, NULL },
   { "-p", "--prefix", "[STRING] Prepend STRING to each argument",
     OPT_SET_VALUE, &prefix, NULL },
+  { NULL, "-np", "Long option that does nothing", OPT_NO_ARG, NULL, handler },
   { NULL }
 };
 

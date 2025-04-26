@@ -57,7 +57,7 @@ cmp "./echo 123" "123"
 cmp "./echo --prefix=123 456 789" "123456 123789"
 cmp "./echo -np123 456 789" "123456 123789"
 cmp "./echo -n --prefix 123 456 789" "123456 123789"
-cmp "./echo -np 123 456 789" "123456 123789"
+cmp "./echo -np 123 456 789" "123 456 789"
 
 echo
 echo now running tests using local echo program
