@@ -34,6 +34,7 @@ Symbols defined by this library:
     opt_usage
     opt_setusage
     opt_setprintfn
+    opt_caseless
   Data
     opt_arg
 
@@ -78,8 +79,9 @@ supplied value for the option, if applicable. If the option takes a supplied
 value, 'opt_arg' is guaranteed to be non-NULL.
 
 The return code of the handler is zero if option parsing should continue as
-normal. A non-zero return code tells 'opt_parse' to stop handling options and
-return the code.
+normal. A negative return code tells 'opt_parse' to stop handling options and
+return the code. An error code should never be positive, as 'opt_parse' returns
+a positive integer only if no error occurs.
 
 The following return codes have predefined meaning:
   LIBOPT_ERROR - indicates an error
@@ -181,9 +183,14 @@ extern void opt_usage (void);
 */
 extern void opt_setusage (const char *str);
 /*
-** for freestanding environment:
+** for freestanding environment only:
 ** provide a print callback function for error messages
 */
 extern void opt_setprintfn (void (*fn) (const char *, ...));
+/*
+** for hosted environment only:
+** set whether to ignore case when checking for options
+*/
+extern void opt_caseless (int x);
 
 #endif /* opt_h */

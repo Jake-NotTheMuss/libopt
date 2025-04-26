@@ -10,13 +10,22 @@
 #include <stdio.h> /* fprintf */
 #include <stdlib.h> /* exit */
 #include <string.h> /* strchr, strcmp, strncmp, strlen */
+#include <ctype.h> /* tolower */
 #endif /* !LIBOPT_SOLO */
 
-#include "opt.h"
+static int caseless;
 
-#ifdef LIBOPT_SOLO
+void opt_caseless (int x) {
+  caseless = x;
+}
+
+#ifndef LIBOPT_SOLO
+#define L tolower
+#else /* !LIBOPT_SOLO */
+/* no 'tolower' */
+#define L(x) x
 /*
-** provide strchr, strcmp, strncmp, and strlen if in a freestanding environment
+** provide strchr and strlen if in a freestanding environment
 */
 static char *strchr (const char *s, int c) {
   char ch = c;
@@ -25,27 +34,33 @@ static char *strchr (const char *s, int c) {
   return (char *)s;
 }
 
-static int strcmp (const char *s1, const char *s2) {
-  for (; *s1 == *s2; s1++, s2++)
+static size_t strlen (const char *s) {
+  const char *s1;
+  for (s1 = s; *s1; s1++) {}
+  return (size_t)(s1 - s);
+}
+#endif /* LIBOPT_SOLO */
+
+/* caseless strcmp and strncmp */
+static int cmp (const char *s1, const char *s2) {
+  for (; *s1 == *s2 || (caseless && L(*s1) == L(*s2)); s1++, s2++)
     if (*s1 == 0) return 0;
   return *(unsigned char *)s1 < *(unsigned char *)s2 ? -1 : 1;
 }
 
-static int strncmp (const char *s1, const char *s2, size_t n) {
+static int ncmp (const char *s1, const char *s2, size_t n) {
   for (; n; s1++, s2++, n--) {
-    if (*s1 != *s2)
+    if (*s1 != *s2 && (!caseless || L(*s1) != L(*s2)))
       return *(unsigned char *)s1 < *(unsigned char *)s2 ? -1 : 1;
     if (*s1 == 0) break;
   }
   return 0;
 }
 
-static size_t strlen (const char *s) {
-  const char *s1;
-  for (s1 = s; *s1; s1++)
-    ;
-  return (size_t)(s1 - s);
-}
+#include "opt.h"
+
+/* print function */
+#ifdef LIBOPT_SOLO
 
 /* user-provided print function for error messages */
 static void (*fn_print) (const char *, ...);
@@ -60,7 +75,7 @@ void opt_setprintfn (void (*fn) (const char *, ...)) {
   fn_print = fn;
 }
 
-#else /* !LIBOPT_SOLO */
+#else /* LIBOPT_SOLO */
 
 static void opt_print (const char *fmt, ...) {
   va_list ap;
@@ -159,8 +174,9 @@ static void check_opt (const struct opt_s *o, const char *arg) {
 #define err_arg_required(opt) \
   opt_print("%s: option requires an argument -- %s\n", local_progname, opt)
 
-#define STREQ(a,b) (strcmp(a, b) == 0)
-#define STREQN(a,b,n) (strncmp(a,b,n) == 0)
+
+#define STREQ(a,b) (cmp(a, b) == 0)
+#define STREQN(a,b,n) (ncmp(a,b,n) == 0)
 
 /* handle all options from the command line, return the index of the first
    non-option argument, or (-1) if an error occurred */
@@ -184,7 +200,7 @@ int opt_parse (int argc, const void *_argv, const struct opt_s *options,
     opt_arg = NULL;
     if (argv[i][0] != '-')  /* non-option */
       return i;
-    else if (strcmp(argv[i], "--") == 0)  /* '--' indicates end of options */
+    else if (cmp(argv[i], "--") == 0)  /* '--' indicates end of options */
       return i+1;
     /* parse a single short or long option; do this before parsing short
        options in case the host program uses a single '-' in long options */
